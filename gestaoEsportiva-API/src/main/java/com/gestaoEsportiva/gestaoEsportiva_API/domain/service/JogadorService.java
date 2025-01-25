@@ -4,6 +4,7 @@ import com.gestaoEsportiva.gestaoEsportiva_API.domain.model.Jogador;
 import com.gestaoEsportiva.gestaoEsportiva_API.domain.model.Time;
 import com.gestaoEsportiva.gestaoEsportiva_API.domain.repository.JogadorRepository;
 import com.gestaoEsportiva.gestaoEsportiva_API.domain.repository.TimeRepository;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,14 +18,24 @@ public class JogadorService {
     private TimeRepository timeRepository;
 
     public Jogador salvar(Jogador jogador){
-        Long idTime = jogador.getTime().getId();
-        Time timeEncontrado = timeRepository.buscarOuFalhar(idTime);
+        Long timeId = jogador.getTime().getId();
+        Time timeEncontrado = timeRepository.findByIdOrElseThrowException(timeId);
         jogador.setTime(timeEncontrado);
-        return jogadorRepository.save(jogador);
+        Jogador jogadorSalvo = jogadorRepository.save(jogador);
+        return jogadorSalvo;
     }
 
     public void deletar(Long jogadorId){
+        Jogador jogadorEncontrado = jogadorRepository.findByIdOrElseThrowExpcetion(jogadorId);
+        jogadorRepository.delete(jogadorEncontrado);
+    }
 
+    public Jogador atualizar(Long jogadorId, Jogador jogadorAlterar){
+        Jogador jogadorEncontrado = jogadorRepository.findByIdOrElseThrowExpcetion(jogadorId);
+        Long timeId = jogadorEncontrado.getTime().getId();
+        Time timeEncontrado = timeRepository.findByIdOrElseThrowException(timeId);
+        BeanUtils.copyProperties(jogadorAlterar, jogadorEncontrado, "id");
+        return jogadorRepository.save(jogadorEncontrado);
     }
 
 }

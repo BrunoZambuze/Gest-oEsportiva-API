@@ -2,10 +2,12 @@ package com.gestaoEsportiva.gestaoEsportiva_API.domain.service;
 
 import com.gestaoEsportiva.gestaoEsportiva_API.domain.model.Jogador;
 import com.gestaoEsportiva.gestaoEsportiva_API.domain.model.Time;
+import com.gestaoEsportiva.gestaoEsportiva_API.domain.model.exception.EntidadeEmUsoException;
 import com.gestaoEsportiva.gestaoEsportiva_API.domain.repository.JogadorRepository;
 import com.gestaoEsportiva.gestaoEsportiva_API.domain.repository.TimeRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,19 +26,23 @@ public class TimeService {
     }
 
     public List<Jogador> buscarJogadores(Long timeId){
-        timeRepository.buscarOuFalhar(timeId);
-        return timeRepository.buscarJogadoresDoTime(timeId);
+        Time timeEncontrado = timeRepository.findByIdOrElseThrowException(timeId);
+        return timeEncontrado.getJogadores();
     }
 
-    public void atualizar(Time timeAtualizar, Long timeId){
-        Time timeEncontrado = timeRepository.buscarOuFalhar(timeId);
+    public Time atualizar(Time timeAtualizar, Long timeId){
+        Time timeEncontrado = timeRepository.findByIdOrElseThrowException(timeId);
         BeanUtils.copyProperties(timeAtualizar, timeEncontrado, "id");
-        timeRepository.save(timeEncontrado);
+        return timeRepository.save(timeEncontrado);
     }
 
     public void deletar(Long timeId){
-        Time timeEncontrado = timeRepository.buscarOuFalhar(timeId);
-        timeRepository.delete(timeEncontrado);
+         Time timeEncontrado = timeRepository.findByIdOrElseThrowException(timeId);
+         try{
+             timeRepository.delete(timeEncontrado);
+         }catch(DataIntegrityViolationException e){
+             throw new EntidadeEmUsoException();
+         }
     }
 
 }
