@@ -2,13 +2,10 @@ package com.gestaoEsportiva.gestaoEsportiva_API.api.controller;
 
 import com.gestaoEsportiva.gestaoEsportiva_API.domain.model.Jogador;
 import com.gestaoEsportiva.gestaoEsportiva_API.domain.model.Time;
-import com.gestaoEsportiva.gestaoEsportiva_API.domain.model.exception.EntidadeEmUsoException;
-import com.gestaoEsportiva.gestaoEsportiva_API.domain.model.exception.TimeNaoEncontradoException;
 import com.gestaoEsportiva.gestaoEsportiva_API.domain.repository.TimeRepository;
 import com.gestaoEsportiva.gestaoEsportiva_API.domain.service.TimeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +20,8 @@ public class TimeController {
     @Autowired
     private TimeService timeService;
 
+    private final static HttpStatus status = HttpStatus.BAD_REQUEST;
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Time adicionarTime(@RequestBody Time time){
@@ -30,48 +29,27 @@ public class TimeController {
     }
 
     @GetMapping("/{timeId}")
-    public ResponseEntity<?> buscarTime(@PathVariable Long timeId){
-        try{
-            Time timeEncontrado = timeRepository.findByIdOrElseThrowException(timeId);
-            return ResponseEntity.ok(timeEncontrado);
-        }catch (TimeNaoEncontradoException e){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }
+    public Time buscarTime(@PathVariable Long timeId){
+            return timeRepository.findByIdOrElseThrowException(timeId);
     }
 
     @GetMapping("/jogadores/{timeId}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<?> visualizarJogadores(@PathVariable Long timeId){
-        try{
-            List<Jogador> listaJogadores = timeService.buscarJogadores(timeId);
-            return ResponseEntity.ok(listaJogadores);
-        }catch (TimeNaoEncontradoException e){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }
+    public List<Jogador> visualizarJogadores(@PathVariable Long timeId){
+            return timeService.buscarJogadores(timeId);
     }
 
     @PutMapping("/{timeId}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<?> atualizar(@RequestBody Time timeAtualizar,
+    public Time atualizar(@RequestBody Time timeAtualizar,
                                           @PathVariable Long timeId){
-        try{
-            Time timeAtualizado = timeService.atualizar(timeAtualizar, timeId);
-            return ResponseEntity.ok(timeAtualizado);
-        }catch (TimeNaoEncontradoException e){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }
+            return timeService.atualizar(timeAtualizar, timeId);
     }
 
     @DeleteMapping("{timeId}")
-    public ResponseEntity<?> deletar(@PathVariable Long timeId){
-        try{
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deletar(@PathVariable Long timeId){
             timeService.deletar(timeId);
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-        }catch (TimeNaoEncontradoException e){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }catch (EntidadeEmUsoException e){
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
-        }
     }
 
 }
