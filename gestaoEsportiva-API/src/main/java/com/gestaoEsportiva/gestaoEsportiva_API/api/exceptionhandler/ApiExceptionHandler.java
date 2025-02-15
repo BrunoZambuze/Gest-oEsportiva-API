@@ -1,6 +1,8 @@
 package com.gestaoEsportiva.gestaoEsportiva_API.api.exceptionhandler;
 
+import com.fasterxml.jackson.core.JsonLocation;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.gestaoEsportiva.gestaoEsportiva_API.domain.model.exception.EntidadeEmUsoException;
 import com.gestaoEsportiva.gestaoEsportiva_API.domain.model.exception.EntidadeNaoEncontradaException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -13,6 +15,7 @@ import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.util.stream.Collectors;
@@ -20,10 +23,23 @@ import java.util.stream.Collectors;
 @ControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
-    private ResponseEntity<Object> handleJsonParseException(JsonParseException ex, HttpHeaders headers, HttpStatus status, WebRequest webRequest){
+    private ResponseEntity<Object> handleUnrecognizedProperty(UnrecognizedPropertyException ex, HttpHeaders headers, HttpStatus status, WebRequest webRequest){
 
-        String detail = String.format("A propriedade %s possui a sintaxe errada, pois enviou o valor '%s' que não é aceito!. " +
-                                       "Por favor corrija!", "terminar", "depois");
+        ProblemaType problemaType = ProblemaType.MENSAGEM_INCOMPREESIVEL;
+        String detail = String.format("A propriedade '%s' não existe no contexto da aplicação! Por favor corrija e " +
+                "tente novamente", ex.getPropertyName());
+
+        Problema problema = createProblemaBuilder(status, problemaType, detail).build();
+
+        return handleExceptionInternal(ex, problema, headers, status, webRequest);
+    }
+
+    private ResponseEntity<Object> handleJsonParse(JsonParseException ex, HttpHeaders headers, HttpStatus status, WebRequest webRequest){
+
+        JsonLocation location = ex.getLocation();
+
+        String detail = String.format("Erro de sintaxe no JSON: A linha %d e coluna %d foram escritas de maneira errada! " +
+                "Jackson não entendeu a estrutura do JSON", location.getLineNr(), location.getColumnNr());
         ProblemaType problemaType = ProblemaType.MENSAGEM_INCOMPREESIVEL;
 
         Problema problema = createProblemaBuilder(status, problemaType, detail).build();
@@ -55,11 +71,24 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         if(rootCause instanceof InvalidFormatException){
             return handleInvalidFormat((InvalidFormatException) rootCause, headers, status, request);
         } else if(rootCause instanceof JsonParseException){
-            return handleJsonParseException((JsonParseException) rootCause, headers, status, request);
+            return handleJsonParse((JsonParseException) rootCause, headers, status, request);
+        } else if(rootCause instanceof UnrecognizedPropertyException){
+            return handleUnrecognizedProperty((UnrecognizedPropertyException) rootCause, headers, status, request);
         }
 
         ProblemaType problemaType = ProblemaType.MENSAGEM_INCOMPREESIVEL;
         String detail = "O corpo da requisição está inválido! Por favor verifique a sintaxe";
+
+        Problema problema = createProblemaBuilder(status, problemaType, detail).build();
+
+        return this.handleExceptionInternal(ex, problema, headers, status, request);
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleNoHandlerFoundException(NoHandlerFoundException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
+
+        ProblemaType problemaType = ProblemaType.URI_INVALIDA;
+        String detail = String.format("A URI informada '%s' não existe! Por favavor corrija e tente novamente", ex.getRequestURL());
 
         Problema problema = createProblemaBuilder(status, problemaType, detail).build();
 

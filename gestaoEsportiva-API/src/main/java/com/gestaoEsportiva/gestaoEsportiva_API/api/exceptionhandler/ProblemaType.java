@@ -5,6 +5,7 @@ import lombok.Getter;
 @Getter
 public enum ProblemaType {
 
+    URI_INVALIDA("Uri inválida", "/uri-invalida"),
     MENSAGEM_INCOMPREESIVEL("Mensagel incompresível", "/mensagem-incompreensivel"),
     TIPO_DE_MIDIA_NAO_SUPORTADO("Tipo de mídia não suportado", "tipo-de-midia-nao-suportado"),
     ENTIDADE_NAO_ENCONTRADA("Entiade não encontrada", "/entidade-nao-encontrada"),
