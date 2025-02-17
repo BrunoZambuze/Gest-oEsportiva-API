@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 @Entity
@@ -20,9 +21,11 @@ public class Time {
     @EqualsAndHashCode.Include
     private Long id;
 
+    @NotBlank
     @Column
     private String nome;
 
+    @NotBlank
     @Column
     private String cidade;
 

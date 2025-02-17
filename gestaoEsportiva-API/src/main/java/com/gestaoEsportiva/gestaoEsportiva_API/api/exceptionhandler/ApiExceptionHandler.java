@@ -11,13 +11,16 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 @ControllerAdvice
@@ -80,6 +83,27 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         String detail = "O corpo da requisição está inválido! Por favor verifique a sintaxe";
 
         Problema problema = createProblemaBuilder(status, problemaType, detail).build();
+
+        return this.handleExceptionInternal(ex, problema, headers, status, request);
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
+
+        ProblemaType problemaType = ProblemaType.DADOS_INVALIDOS;
+        String detail = "Um ou mais campos estão preenchidos de maneira errada. Por favor corrija-os";
+
+        BindingResult bindingResult = ex.getBindingResult();
+        List<Field> problemaFields = bindingResult.getFieldErrors()
+                .stream()
+                .map(fieldError -> Field.builder()
+                        .nome(fieldError.getField())
+                        .uiMessage(fieldError.getDefaultMessage())
+                        .valorRejeitado(fieldError.getRejectedValue())
+                        .build())
+                .collect(Collectors.toList());
+
+        Problema problema = createProblemaBuilder(status, problemaType, detail).fields(problemaFields).build();
 
         return this.handleExceptionInternal(ex, problema, headers, status, request);
     }

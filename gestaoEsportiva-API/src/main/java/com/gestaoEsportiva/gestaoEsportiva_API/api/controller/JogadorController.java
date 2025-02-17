@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping("/jogadores")
 public class JogadorController {
@@ -24,7 +26,7 @@ public class JogadorController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Jogador salvarJogador(@RequestBody Jogador jogador){
+    public Jogador salvarJogador(@Valid @RequestBody Jogador jogador){
         return jogadorService.salvar(jogador);
     }
 
@@ -39,7 +41,7 @@ public class JogadorController {
     @PutMapping("{jogadorId}")
     @ResponseStatus(HttpStatus.OK)
     public Jogador atualizar(@PathVariable Long jogadorId,
-                        @RequestBody Jogador jogadorAlterar){
+                             @Valid @RequestBody Jogador jogadorAlterar){
         return jogadorService.atualizar(jogadorId, jogadorAlterar);
     }
 
