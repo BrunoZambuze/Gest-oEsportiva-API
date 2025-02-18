@@ -7,6 +7,7 @@ import com.gestaoEsportiva.gestaoEsportiva_API.domain.model.exception.EntidadeEm
 import com.gestaoEsportiva.gestaoEsportiva_API.domain.model.exception.EntidadeNaoEncontradaException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import com.fasterxml.jackson.core.JsonParseException;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -128,6 +129,19 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         Problema problema = createProblemaBuilder(status, problemaType, detail).build();
 
         return this.handleExceptionInternal(ex, problema, headers, status, request);
+    }
+
+    @ExceptionHandler(InvalidDataAccessApiUsageException.class)
+    public ResponseEntity<?> handleInvalidDataAccessApiUsage(InvalidDataAccessApiUsageException ex, WebRequest webRequest){
+
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+        ProblemaType problemaType = ProblemaType.ERRO_AO_ACESSAR_OS_DADOS;
+        String detail = "Erro interno ao acessar o banco de dados. Verifique se as operações estão corretas.";
+
+        Problema problema = createProblemaBuilder(status, problemaType, detail).build();
+
+        return this.handleExceptionInternal(ex, problema, new HttpHeaders(), status, webRequest);
+
     }
 
     @ExceptionHandler(EntidadeNaoEncontradaException.class)
