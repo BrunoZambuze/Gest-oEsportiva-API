@@ -21,6 +21,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import javax.validation.ConstraintViolationException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -129,6 +130,28 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         Problema problema = createProblemaBuilder(status, problemaType, detail).build();
 
         return this.handleExceptionInternal(ex, problema, headers, status, request);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<?> handleConstraintViolation(ConstraintViolationException ex, WebRequest webRequest){
+
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+        ProblemaType problemaType = ProblemaType.VIOLACAO_DE_CONSTRAINT;
+        String detail = "Um ou mais campos estão inválidos. Corrija-os e tente novamente.";
+
+        List<Field> problemaFields = ex.getConstraintViolations()
+                .stream()
+                .map(constraintViolation -> Field.builder()
+                        .nome(constraintViolation.getPropertyPath().toString())
+                        .uiMessage(constraintViolation.getMessage())
+                        .valorRejeitado(constraintViolation.getInvalidValue() != null ? constraintViolation.getInvalidValue().toString() : "Valor nulo")
+                        .build())
+                .collect(Collectors.toList());
+
+        Problema problema = createProblemaBuilder(status, problemaType, detail).fields(problemaFields).build();
+
+        return this.handleExceptionInternal(ex, problema, new HttpHeaders(), status, webRequest);
+
     }
 
     @ExceptionHandler(InvalidDataAccessApiUsageException.class)

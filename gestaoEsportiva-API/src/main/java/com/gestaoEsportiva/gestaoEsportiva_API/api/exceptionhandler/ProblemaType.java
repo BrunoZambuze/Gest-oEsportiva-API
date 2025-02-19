@@ -5,6 +5,7 @@ import lombok.Getter;
 @Getter
 public enum ProblemaType {
 
+    VIOLACAO_DE_CONSTRAINT("Violação de constraint", "/violacao-de-constraint"),
     ERRO_AO_ACESSAR_OS_DADOS("Erro interno ao acessar os dados", "/erro-interno-ao-acessar-os-dados"),
     DADOS_INVALIDOS("Dados inválidos", "/dados-invalidos"),
     URI_INVALIDA("Uri inválida", "/uri-invalida"),
