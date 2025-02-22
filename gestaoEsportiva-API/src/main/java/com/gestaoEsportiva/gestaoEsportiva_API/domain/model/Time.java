@@ -16,7 +16,7 @@ import java.util.List;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Time {
 
-    @NotNull(groups = Groups.CadastroTime.class)
+    @NotNull(groups = Groups.jogadorId.class)
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include

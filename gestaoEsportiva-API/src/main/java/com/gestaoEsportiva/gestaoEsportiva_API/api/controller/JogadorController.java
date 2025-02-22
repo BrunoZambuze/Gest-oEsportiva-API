@@ -29,7 +29,7 @@ public class JogadorController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Jogador salvarJogador(@Validated({Default.class, Groups.CadastroTime.class}) @RequestBody Jogador jogador){
+    public Jogador salvarJogador(@Valid @RequestBody Jogador jogador){
         return jogadorService.salvar(jogador);
     }
 

@@ -11,6 +11,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PastOrPresent;
+import javax.validation.groups.ConvertGroup;
+import javax.validation.groups.Default;
 import java.time.LocalDate;
 
 @Entity
@@ -33,9 +35,9 @@ public class Jogador {
     @JsonFormat(pattern = "dd/MM/yyyy")
     private LocalDate dataNascimento;
 
-
     @Valid
-//    @NotNull
+    @NotNull
+    @ConvertGroup(from = Default.class, to = Groups.jogadorId.class)
     @OneToOne
     @JsonBackReference
     private Time time;
