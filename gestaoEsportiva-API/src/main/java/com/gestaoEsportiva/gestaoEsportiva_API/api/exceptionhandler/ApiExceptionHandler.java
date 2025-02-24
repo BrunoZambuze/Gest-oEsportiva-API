@@ -7,6 +7,9 @@ import com.gestaoEsportiva.gestaoEsportiva_API.domain.model.exception.EntidadeEm
 import com.gestaoEsportiva.gestaoEsportiva_API.domain.model.exception.EntidadeNaoEncontradaException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import com.fasterxml.jackson.core.JsonParseException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -27,6 +30,9 @@ import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
+
+    @Autowired
+    private MessageSource messageSource;
 
     private ResponseEntity<Object> handleUnrecognizedProperty(UnrecognizedPropertyException ex, HttpHeaders headers, HttpStatus status, WebRequest webRequest){
 
@@ -98,11 +104,15 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         BindingResult bindingResult = ex.getBindingResult();
         List<Field> problemaFields = bindingResult.getFieldErrors()
                 .stream()
-                .map(fieldError -> Field.builder()
-                        .nome(fieldError.getField())
-                        .uiMessage(fieldError.getDefaultMessage())
-                        .valorRejeitado(fieldError.getRejectedValue())
-                        .build())
+                .map(fieldError -> {
+                    String message = messageSource.getMessage(fieldError, LocaleContextHolder.getLocale());
+
+                    return Field.builder()
+                            .nome(fieldError.getField())
+                            .uiMessage(message)
+                            .valorRejeitado(fieldError.getRejectedValue() != null ? fieldError.getRejectedValue().toString() : "Valor nulo!")
+                            .build();
+                })
                 .collect(Collectors.toList());
 
         Problema problema = createProblemaBuilder(status, problemaType, detail).fields(problemaFields).build();
