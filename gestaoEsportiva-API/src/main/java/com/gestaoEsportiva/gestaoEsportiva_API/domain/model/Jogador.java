@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.gestaoEsportiva.gestaoEsportiva_API.api.core.validation.DataValida;
 import com.gestaoEsportiva.gestaoEsportiva_API.api.core.validation.Groups;
+import com.gestaoEsportiva.gestaoEsportiva_API.api.core.validation.NomeCorreto;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -27,6 +28,7 @@ public class Jogador {
     private Long id;
 
     @NotBlank
+    @NomeCorreto
     @Column
     private String nome;
 
