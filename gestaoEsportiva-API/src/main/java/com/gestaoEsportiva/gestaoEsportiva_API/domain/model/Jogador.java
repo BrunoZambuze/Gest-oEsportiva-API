@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.gestaoEsportiva.gestaoEsportiva_API.api.core.validation.DataValida;
 import com.gestaoEsportiva.gestaoEsportiva_API.api.core.validation.Groups;
+import com.gestaoEsportiva.gestaoEsportiva_API.api.core.validation.JogadorMenorDeIdadeDeveTerTime;
 import com.gestaoEsportiva.gestaoEsportiva_API.api.core.validation.NomeCorreto;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -12,13 +13,13 @@ import javax.persistence.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.PastOrPresent;
 import javax.validation.groups.ConvertGroup;
 import javax.validation.groups.Default;
 import java.time.LocalDate;
 
 @Entity
 @Data
+@JogadorMenorDeIdadeDeveTerTime
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Jogador {
 
@@ -38,9 +39,9 @@ public class Jogador {
     @JsonFormat(pattern = "dd/MM/yyyy")
     private LocalDate dataNascimento;
 
-    @Valid
-    @NotNull
-    @ConvertGroup(from = Default.class, to = Groups.jogadorId.class)
+//    @Valid
+//    @NotNull
+//    @ConvertGroup(from = Default.class, to = Groups.jogadorId.class)
     @OneToOne
     @JsonBackReference
     private Time time;

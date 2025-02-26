@@ -29,6 +29,7 @@ public class Time {
     private String nome;
 
     @NotBlank
+    @NomeCorreto
     @Column
     private String cidade;
 

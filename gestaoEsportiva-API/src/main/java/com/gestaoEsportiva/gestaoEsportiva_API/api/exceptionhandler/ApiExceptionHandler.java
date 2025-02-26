@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -102,15 +103,27 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         String detail = "Um ou mais campos estão preenchidos de maneira errada. Por favor corrija-os";
 
         BindingResult bindingResult = ex.getBindingResult();
-        List<Field> problemaFields = bindingResult.getFieldErrors()
+        List<Field> problemaFields = bindingResult.getAllErrors()
                 .stream()
-                .map(fieldError -> {
-                    String message = messageSource.getMessage(fieldError, LocaleContextHolder.getLocale());
+                .map(objectError -> {
+                    String message = messageSource.getMessage(objectError, LocaleContextHolder.getLocale());
+                    String nome = objectError.getObjectName();
+                    String valor_rejeitado = "Valor nulo!";
+
+                    if(objectError instanceof FieldError){
+                        FieldError fieldError = ((FieldError) objectError);
+                        nome = fieldError.getField();
+
+                        if(fieldError.getRejectedValue() != null){
+                            valor_rejeitado = fieldError.getRejectedValue().toString();
+                        }
+
+                    }
 
                     return Field.builder()
-                            .nome(fieldError.getField())
+                            .nome(nome)
                             .uiMessage(message)
-                            .valorRejeitado(fieldError.getRejectedValue() != null ? fieldError.getRejectedValue().toString() : "Valor nulo!")
+                            .valorRejeitado(valor_rejeitado)
                             .build();
                 })
                 .collect(Collectors.toList());
